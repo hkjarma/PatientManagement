@@ -1,0 +1,90 @@
+from flask import Flask, render_template, request
+import re
+import sqlite3
+
+app = Flask(__name__)
+DB_NAME = "patients.db"
+
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db():
+    with get_db_connection() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS patients (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                mobile TEXT NOT NULL,
+                sex TEXT NOT NULL,
+                age INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.commit()
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    message = ""
+    message_type = ""
+
+    if request.method == 'POST':
+        name = (request.form.get('name') or '').strip()
+        mobile = (request.form.get('mobile') or '').strip()
+        sex = (request.form.get('sex') or '').strip()
+        age = request.form.get('age')
+
+        if not name or len(name) > 100:
+            message = "Please enter a valid patient name."
+            message_type = "error"
+        elif not re.fullmatch(r"[0-9+()\-\s]{7,20}", mobile):
+            message = "Please enter a valid mobile number."
+            message_type = "error"
+        elif sex not in {"Male", "Female", "Other"}:
+            message = "Please select a valid sex."
+            message_type = "error"
+        else:
+            try:
+                age_value = int(age)
+            except (TypeError, ValueError):
+                message = "Please enter a valid age."
+                message_type = "error"
+            else:
+                if age_value < 0 or age_value > 120:
+                    message = "Age must be between 0 and 120."
+                    message_type = "error"
+                else:
+                    try:
+                        conn = get_db_connection()
+                        conn.execute(
+                            "INSERT INTO patients (name, mobile, sex, age) VALUES (?, ?, ?, ?)",
+                            (name, mobile, sex, age_value),
+                        )
+                        conn.commit()
+                        message = "Patient registered successfully."
+                        message_type = "success"
+                    except Exception:
+                        message = "Unable to save patient data. Please try again."
+                        message_type = "error"
+                    finally:
+                        conn.close()
+
+    patients = []
+    conn = get_db_connection()
+    patients = conn.execute(
+        "SELECT name, mobile, sex, age, created_at FROM patients ORDER BY id DESC LIMIT 20"
+    ).fetchall()
+    conn.close()
+
+    return render_template('index.html', patients=patients, message=message, message_type=message_type)
+
+
+if __name__ == '__main__':
+    init_db()
+    app.run(host='0.0.0.0', port=5000, debug=True)
