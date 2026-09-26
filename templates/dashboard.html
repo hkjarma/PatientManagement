@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Today's Patients</title>
+    <title>Dashboard - Patient Records</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,13 +52,34 @@
         button:hover {
             background: #176d8c;
         }
+        form {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid #c8d9e6;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        input:focus, select:focus {
+            outline: 3px solid #d9eff7;
+            border-color: #4f8fb7;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
-            <h1>Dashboard - Today's Patients</h1>
-            <p>Showing records for: <strong>{{ current_date }}</strong></p>
+            <h1>Dashboard - Patient Records</h1>
+            <form method="GET" action="/dashboard">
+                <input type="text" name="name" placeholder="Search by Name">
+                <input type="text" name="mobile" placeholder="Search by Mobile">
+                <input type="date" name="created_date" placeholder="Search by Date">
+                <button type="submit">Search</button>
+            </form>
         </div>
 
         <div class="card">
@@ -87,7 +108,7 @@
                 </tbody>
             </table>
             {% else %}
-                <p>No patients registered today.</p>
+                <p>No patients found for the selected criteria.</p>
             {% endif %}
         </div>
     </div>

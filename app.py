@@ -32,21 +32,34 @@ from datetime import datetime
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
-    # Get the current date
-    current_date = datetime.now().strftime('%Y-%m-%d')
+    # Get search parameters from the query string
+    name = request.args.get('name', '').strip()
+    mobile = request.args.get('mobile', '').strip()
+    created_date = request.args.get('created_date', '').strip()
 
-    # Fetch patients for the current date (using DATE(created_at) to ignore time)
-    query = """
-        SELECT id, name, mobile, sex, age, created_at 
-        FROM patients 
-        ORDER BY id DESC
-    """
+    # Base query
+    query = "SELECT id, name, mobile, sex, age, created_at FROM patients WHERE 1=1"
+    params = []
+
+    # Add filters based on search parameters
+    if name:
+        query += " AND name LIKE ?"
+        params.append(f"%{name}%")
+    if mobile:
+        query += " AND mobile LIKE ?"
+        params.append(f"%{mobile}%")
+    if created_date:
+        query += " AND DATE(created_at) = ?"
+        params.append(created_date)
+
+    query += " ORDER BY id DESC"
+
+    # Execute the query
     conn = get_db_connection()
-    patients = conn.execute(query).fetchall()
+    patients = conn.execute(query, params).fetchall()
     conn.close()
 
-    return render_template('dashboard.html', patients=patients, current_date=current_date)
-
+    return render_template('dashboard.html', patients=patients)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
