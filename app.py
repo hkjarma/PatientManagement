@@ -28,6 +28,25 @@ def init_db():
         )
         conn.commit()
 
+from datetime import datetime
+
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    # Get the current date
+    current_date = datetime.now().strftime('%Y-%m-%d')
+
+    # Fetch patients for the current date (using DATE(created_at) to ignore time)
+    query = """
+        SELECT id, name, mobile, sex, age, created_at 
+        FROM patients 
+        ORDER BY id DESC
+    """
+    conn = get_db_connection()
+    patients = conn.execute(query).fetchall()
+    conn.close()
+
+    return render_template('dashboard.html', patients=patients, current_date=current_date)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

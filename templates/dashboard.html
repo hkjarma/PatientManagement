@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Today's Patients</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f9fb;
+            margin: 0;
+            padding: 30px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        h1, h2 {
+            margin-top: 0;
+            color: #1d4d6d;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5edf3;
+            text-align: left;
+        }
+        th {
+            color: #47637f;
+            background: #f7fafc;
+        }
+        button {
+            background: #1b7f9f;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+        button:hover {
+            background: #176d8c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Dashboard - Today's Patients</h1>
+            <p>Showing records for: <strong>{{ current_date }}</strong></p>
+        </div>
+
+        <div class="card">
+            <h2>Patient Records</h2>
+            {% if patients %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Sex</th>
+                        <th>Age</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr>
+                        <td>{{ patient['name'] }}</td>
+                        <td>{{ patient['mobile'] }}</td>
+                        <td>{{ patient['sex'] }}</td>
+                        <td>{{ patient['age'] }}</td>
+                        <td>{{ patient['created_at'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>No patients registered today.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
